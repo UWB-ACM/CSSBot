@@ -61,31 +61,16 @@ namespace CSSBot.Commands
             await ReplyAsync(txt);
         }
 
-        [Command("Cleanup", RunMode = RunMode.Async)]
-        [Summary("Deletes a specified number of the bot's recent messages.")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireContext(ContextType.Guild)]
-        public async Task CleanupRecent([Name("NumMsg")] int amountToCleanup = 10)
-        {
-            // ensure bounds
-            // don't allow deleting more than 25 because that's a lot to delete
-            // and we don't want to spam api either
-            if (amountToCleanup < 0 || amountToCleanup > 25) amountToCleanup = 10;
-            foreach( var message in await Context.Channel.GetMessagesAsync(Context.Message.Id, Direction.Before, amountToCleanup).FlattenAsync())
-            {
-                if(message.Author.Id == Context.Client.CurrentUser.Id)
-                    await message.DeleteAsync();
-            }
-
-            // delete the message that started the command as well
-            await Context.Message.DeleteAsync();
-        }
-
         [Command("InviteLink")]
         [Summary("Gets the invite link for the bot.")]
         [RequireUserPermission(GuildPermission.SendMessages | GuildPermission.EmbedLinks)]
         public async Task InviteLink()
         {
+            // the link:
+            // https://discordapp.com/oauth2/authorize?client_id=YOURBOTCLIENTIDGOESHERE&scope=bot
+            // is used for inviting the bot with the default permissions for everyone
+            // this calculator is a good way to generate these links as well
+            // https://discordapi.com/permissions.html
             await ReplyAsync($"A user with the 'Manage Server' permission can add me to your server using the following link: https://discordapp.com/oauth2/authorize?client_id={Context.Client.CurrentUser.Id}&scope=bot");
         }
 
@@ -110,6 +95,5 @@ namespace CSSBot.Commands
             => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
         private static string GetHeapSize()
             => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
-
     }
 }

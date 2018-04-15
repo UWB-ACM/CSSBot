@@ -2,17 +2,9 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using CSSBot.Reminders;
 using Discord.Commands;
 using System.Reflection;
-using CSSBot.Counters;
-using CSSBot.Models;
-using CSSBot.Reminders;
-using LiteDB;
-using CSSBot.Tags;
 
 namespace CSSBot
 {
@@ -21,21 +13,14 @@ namespace CSSBot
         private DiscordSocketClient m_client;
         private CommandService _commands;
         private IServiceProvider _services;
-        private LiteDatabase _database;
 
         public async Task Start()
         {
-            // open or create our database (if it doesn't exist)
-            _database = new LiteDatabase(Program.GlobalConfiguration.Data.LiteDatabasePath);
-
-            // add our startup date
-            var startup = _database.GetCollection<StartupEvent>("startup");
-            startup.Insert(new StartupEvent() { Time = DateTime.Now });
-            
             // starts our client
             // we use LogSeverity.Debug because more info the better
-            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Debug });
+            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = LogSeverity.Debug });
 
+            // init the Command Service
             _commands = new CommandService();
 
             // log in as a bot using our connection token
@@ -43,13 +28,11 @@ namespace CSSBot
             await m_client.StartAsync();
 
             // dependency injection
+            // this is used to automatically populate the types that commands ask
+            // for, since we don't instantiate the types ourselves
             _services = new ServiceCollection()
                 .AddSingleton(m_client)
                 .AddSingleton(_commands)
-                .AddSingleton(_database)
-                .AddSingleton(new CounterService(_database, m_client))
-                .AddSingleton(new ReminderService(m_client, _database))
-                .AddSingleton(new TagService(_database))
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
@@ -61,6 +44,7 @@ namespace CSSBot
             m_client.Ready += Client_Ready;
 
             // set some help text
+            // this is a good way to let the user know which command to type to get started
             await m_client.SetGameAsync(string.Format("Type {0}Help", GlobalConfiguration.CommandPrefix));
 
             // wait indefinitely 
@@ -69,11 +53,11 @@ namespace CSSBot
 
         private async Task InstallCommandsAsync()
         {
-            m_client.MessageReceived += M_client_MessageReceived;
+            m_client.MessageReceived += client_MessageReceived;
             await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly());
         }
 
-        private async Task M_client_MessageReceived(SocketMessage arg)
+        private async Task client_MessageReceived(SocketMessage arg)
         {
             // Don't handle the command if it is a system message
             var message = arg as SocketUserMessage;
@@ -83,7 +67,8 @@ namespace CSSBot
             int argPos = 0;
             // Determine if the message has a valid prefix, adjust argPos 
 
-            //todo update command handler stuff
+            // ensure that the message either starts with the command prefix
+            // or by @mentioning the bot user
             if (!(message.HasMentionPrefix(m_client.CurrentUser, ref argPos) || message.HasCharPrefix(GlobalConfiguration.CommandPrefix, ref argPos))) return;
 
             // Create a Command Context
@@ -95,12 +80,8 @@ namespace CSSBot
             if (!result.IsSuccess)
             {
                 // log the error
-                Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
+                LogMessage errorMessage = new LogMessage(LogSeverity.Warning, "CommandHandler", result.ErrorReason);
                 await Log(errorMessage);
-                // don't actually reply back with the error
-
-                // should probably redesign this
-                // if a command doesn't match, should try and find closest matches
             }
         }
 
@@ -115,7 +96,7 @@ namespace CSSBot
         public async static Task Log(Discord.LogMessage arg)
         { 
             // log stuff to console
-            // could also log to a file if needed later on
+            // could also log to a file here
             Console.WriteLine(arg.ToString());
         }
     }

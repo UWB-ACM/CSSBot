@@ -7,30 +7,31 @@ using System.Xml.Serialization;
 namespace CSSBot
 {
     /// <summary>
-    /// This class should be used for containing Configuration classes
-    /// or classes that depend on the configuration and that should 
-    /// be re-used
+    /// This class should be used to contain data that is loaded
+    /// from a file for configuration purposes, like the bot token.
     /// Also used for storing constants (CommandPrefix)
     /// </summary>
     public class GlobalConfiguration
     {
-        // we shouldn't need to be changing this often, if at all
+        /// <summary>
+        /// What prefix should commands begin with?
+        /// A good command prefix doesn't get triggered
+        /// accidentally by normal conversation, and 
+        /// is somewhat unique to other bots.
+        /// </summary>
         public const char CommandPrefix = '?';
 
         // the path to the configuration file
+        // that will be read and parsed
         private string m_ConfigFilePath = null;
 
         // our configuration data, loaded from xml file
-        private Configuration m_Data;
-        public Configuration Data
-        {
-            get { return m_Data; }
-        }
+        public Configuration Data { get; private set; }
 
         /// <summary>
         /// Constructor for GlobalConfiguration class
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The path to the file that will be opened and parsed</param>
         public GlobalConfiguration(string path)
         {
             // set the path
@@ -41,6 +42,7 @@ namespace CSSBot
 
         /// <summary>
         /// Sets the Configuration File Path
+        /// Validates that the path was not empty or invalid
         /// </summary>
         /// <param name="path"></param>
         private void SetConfigurationFilePath(string path)
@@ -54,7 +56,7 @@ namespace CSSBot
         }
 
         /// <summary>
-        /// Unused constructor
+        /// Default constructor should be private
         /// </summary>
         private GlobalConfiguration() { }
 
@@ -64,16 +66,20 @@ namespace CSSBot
         /// <param name="path"></param>
         public void LoadConfiguration()
         {
+            // ensure that the config file path is valid
             if (string.IsNullOrWhiteSpace(m_ConfigFilePath))
             {
                 throw new Exception("The configuration file path has not been set!");
             }
 
-            XmlSerializer ser = new XmlSerializer(typeof(Configuration));
+            // create a XML Serializer object
+            var ser = new XmlSerializer(typeof(Configuration));
 
-            using (FileStream fs = new FileStream(m_ConfigFilePath, FileMode.Open))
+            // open the file at the given path
+            using (var fs = new FileStream(m_ConfigFilePath, FileMode.Open))
             {
-                m_Data = (Configuration)ser.Deserialize(fs);
+                // try to deserialize the contents of the file stream and hard-cast it to a Configuration type
+                Data = (Configuration)ser.Deserialize(fs);
             }
         }
     }
