@@ -39,6 +39,25 @@ namespace CSSBot.Commands
         }
 
         /// <summary>
+        /// Hard-coded help command.
+        /// There are ways to do this programatically, but are too complex for what is
+        /// supposed to be a barebones example.
+        /// </summary>
+        /// <returns></returns>
+        [Command("Help"), Summary("Help text.")]
+        public async Task HelpText()
+        {
+            await ReplyAsync(
+@"**Help**:
+?Ping
+?Help
+?Echo text
+?About
+?InviteLink
+?Debug");
+        }
+
+        /// <summary>
         /// Echo command
         /// </summary>
         /// <returns></returns>
