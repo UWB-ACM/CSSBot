@@ -1,9 +1,7 @@
-# CSSBot
+# CSSBot (barebones)
 
-Master: [![Build status](https://ci.appveyor.com/api/projects/status/b948an39c0hv2b5t/branch/master?svg=true)](https://ci.appveyor.com/project/Chris-Johnston/cssbot/branch/master)
-Current: [![Build status](https://ci.appveyor.com/api/projects/status/b948an39c0hv2b5t?svg=true)](https://ci.appveyor.com/project/Chris-Johnston/cssbot)
-
-A bot made for the CSS Discord server.
+A barebones example of a C# Discord bot, using the [Discord.NET library][d-net]
+and based from [Chris-Johnston/CSSBot.][cj-cssbot]
 
 ## Installation and Usage
 
@@ -26,7 +24,15 @@ JetBrains rider (available for free for students) is a good option for Linux dev
   - Copy the contents of `Test Config.xml` into your new file. Insert your bot's user token into the `<ConnectionToken>` field.
   - Set the startup parameters of your project to point to your configuration file. The command line arguments should read: `-config=/Path/To/Config.xml`.
 
-## Project Structure
+## Deployment
 
-Work-in-progress or small changes should be contributed to the `dev` branch. The `master` branch should be used for "stable" releases only.
-Contributions should be merged to the `dev` branch, and batches of changes merged to the `master` branch. The bot is built and deployed from the `master` branch.
+`todo`
+
+# Contributing
+
+This bot is intended to serve as an example. Either use this code as a reference or a base to make your own bot!
+
+
+
+[cj-cssbot]: https://github.com/Chris-Johnston/CSSBot
+[d-net]: https://github.com/RogueException/Discord.Net
